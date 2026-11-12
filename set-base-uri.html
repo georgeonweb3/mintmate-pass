@@ -102,7 +102,7 @@ setBtn.onclick = async () => {
     setBtn.disabled = true;
     connectBtn.disabled = true;
     say("Estimating gas...");
-    const est = await provider.estimateGas({ to: CONTRACT, data: CALLDATA });
+    const est = await provider.estimateGas({ to: CONTRACT, data: CALLDATA, from: await signer.getAddress() });
     const gasLimit = (est * 120n) / 100n;
     say("Gas estimate: " + est.toString() + ". Sending — confirm it in Bitget...");
     const tx = await signer.sendTransaction({ to: CONTRACT, data: CALLDATA, gasLimit });
@@ -113,7 +113,11 @@ setBtn.onclick = async () => {
     const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["string"], raw);
     say("DONE. Metadata address is set.\n\ntokenURI(1) now reads:\n" + decoded[0] + "\n\nSend that line to Muse so it can confirm the metadata renders.", "ok");
   } catch (e) {
-    say("Failed or rejected: " + (e && e.message ? e.message : e) + "\n\nNothing was changed. You can reload the page and try again.", "err");
+    const rawMsg = (e && e.message ? e.message : String(e));
+    const shortMsg = rawMsg.includes("CALL_EXCEPTION") || rawMsg.includes("estimateGas")
+      ? "The network refused the check. That usually means the page did not say who is sending it, or the connected wallet is not the main wallet. Reload the page, tap button 1 first, then button 2."
+      : rawMsg;
+    say("It did not go through: " + shortMsg + "\n\n(Detail: " + rawMsg + ")\n\nNothing was changed. You can reload the page and try again.", "err");
     setBtn.disabled = false;
   }
 };
