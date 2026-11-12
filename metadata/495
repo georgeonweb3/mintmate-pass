@@ -1,0 +1,27 @@
+{
+  "name": "MintMate Pass #495",
+  "description": "MintMate Pass unlocks execution in MintMate, the precheck-first mint terminal on Base. Checking stays free forever; this pass unlocks mainnet minting, copy-mint preparation, and fund moves. The terminal refuses to mint from fake records, and keys never leave your browser vault. Cap 1,000. Founding passes are the first 200, claimed free by the allowlist. Public passes are 0.005 ETH. Royalty 5%.",
+  "image": "https://georgeonweb3.github.io/mintmate-pass/pass-art.webp",
+  "attributes": [
+    {
+      "trait_type": "Founding",
+      "value": "No"
+    },
+    {
+      "trait_type": "Tier",
+      "value": "Public"
+    },
+    {
+      "trait_type": "Access",
+      "value": "MintMate execution"
+    },
+    {
+      "trait_type": "Chain",
+      "value": "Base"
+    },
+    {
+      "trait_type": "Supply",
+      "value": 1000
+    }
+  ]
+}

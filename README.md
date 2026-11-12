@@ -3,8 +3,17 @@
 ERC-721 access pass for **MintMate** (the Mint Terminal), built to the approved
 spec in `~/workspace/your_files/mintmate-pass-gate-spec.md` (section 3).
 
-**Status: code + tests only. NOT deployed. Nothing has been signed or sent to
-any network.** Deployment is a separate, later step — see "Deploying later".
+**Status: DEPLOYED 2026-11-12 on Base mainnet.**
+Contract: `0xe02Eca3160260D3f19A74f304D4a82cDd6758e1c`
+Deploy tx: `0xa185a5d68313d72fa511a6812d342c9b34718d05a09a108c87c11ac76efd79a8`
+(block 56533252, from the launch wallet, cost 0.00001176 ETH).
+Owner + royalty receiver: George's main wallet
+`0xfFDd2f83555c64d1CaA17f5646C08b80013ED38b`.
+Source verified on Sourcify (exact match, creation + runtime).
+Art + metadata: `pass-art.webp` and `metadata/` in this repo, served on
+GitHub Pages. Base URI to set (owner-only, before any mint — it locks at
+the first mint):
+`https://georgeonweb3.github.io/mintmate-pass/metadata/`
 
 ## The contract
 
