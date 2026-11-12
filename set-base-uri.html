@@ -33,13 +33,13 @@
   <div class="row"><b>New base URI</b><span class="mono">https://georgeonweb3.github.io/mintmate-pass/metadata/</span></div>
   <div class="row"><b>Art</b><span>One pass card, Founding shown by a metadata trait</span></div>
 
-  <p class="note"><b>Read this first:</b> the metadata address locks at the first mint. After that it cannot be changed. Only tap Set once you are happy with the art and the metadata. The page reads tokenURI(1) back afterwards so you can see the live result.</p>
+  <p class="note"><b>Read this first:</b> the metadata address locks at the first mint. After that it cannot be changed. Only tap Set once you are happy with the art and the metadata. The page reads the address back afterwards so you can see the live result.</p>
 
   <button id="connectBtn">1. Connect main wallet</button>
   <button id="setBtn" disabled>2. Set the metadata address</button>
   <div id="status">Open this page inside your Bitget wallet's browser (Discover tab), not in Chrome. Then tap Connect.</div>
 
-  <p class="note">What happens: the page sends exactly one transaction, calling setBaseURI on the MintMate Pass contract with the address above. You confirm it in Bitget (a few cents of gas from the main wallet). Afterwards the page reads the first token's metadata address back and shows it.</p>
+  <p class="note">What happens: the page sends exactly one transaction, calling setBaseURI on the MintMate Pass contract with the address above. You confirm it in Bitget (a few cents of gas from the main wallet). Afterwards the page reads the address back from the contract and shows it.</p>
 </div>
 <script>
 const CALLDATA = "0x55f804b30000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000003668747470733a2f2f67656f7267656f6e776562332e6769746875622e696f2f6d696e746d6174652d706173732f6d657461646174612f00000000000000000000";
@@ -47,7 +47,7 @@ const CONTRACT = "0xe02Eca3160260D3f19A74f304D4a82cDd6758e1c";
 const OWNER = "0xfFDd2f83555c64d1CaA17f5646C08b80013ED38b";
 const BASE_CHAIN_ID = 8453;
 const BASE_CHAIN_HEX = "0x2105";
-const TOKEN_URI_SELECTOR = "0xc87b56dd";
+const BASE_URI_SELECTOR = "0x6c0360eb";
 const statusEl = document.getElementById("status");
 const connectBtn = document.getElementById("connectBtn");
 const setBtn = document.getElementById("setBtn");
@@ -108,10 +108,9 @@ setBtn.onclick = async () => {
     const tx = await signer.sendTransaction({ to: CONTRACT, data: CALLDATA, gasLimit });
     say("Sent. Waiting for it to land on Base...\nTransaction: " + tx.hash + "\nhttps://basescan.org/tx/" + tx.hash, "ok");
     await tx.wait();
-    const tokenUriData = TOKEN_URI_SELECTOR + "0000000000000000000000000000000000000000000000000000000000000001";
-    const raw = await provider.call({ to: CONTRACT, data: tokenUriData });
+    const raw = await provider.call({ to: CONTRACT, data: BASE_URI_SELECTOR });
     const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["string"], raw);
-    say("DONE. Metadata address is set.\n\ntokenURI(1) now reads:\n" + decoded[0] + "\n\nSend that line to Muse so it can confirm the metadata renders.", "ok");
+    say("DONE. Metadata address is set.\n\nThe contract now points to:\n" + decoded[0] + "\n\nSend that line to Muse so it can confirm the metadata renders.", "ok");
   } catch (e) {
     const rawMsg = (e && e.message ? e.message : String(e));
     const shortMsg = rawMsg.includes("CALL_EXCEPTION") || rawMsg.includes("estimateGas")
