@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set MintMate Pass metadata</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; background: #faf6ef; color: #2b2118; margin: 0; padding: 20px; }
+  .card { max-width: 560px; margin: 0 auto; background: #fffdf8; border: 1px solid #e8ddc9; border-radius: 16px; padding: 22px; box-shadow: 0 4px 24px rgba(43,33,24,.08); }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.sub { color: #7a6a58; margin: 0 0 18px; font-size: 14px; }
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid #f0e8d8; font-size: 14px; }
+  .row b { font-weight: 600; }
+  .row span { text-align: right; word-break: break-all; }
+  .mono { font-family: ui-monospace, monospace; font-size: 12px; }
+  button { width: 100%; padding: 14px; margin-top: 12px; border: 0; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  #connectBtn { background: #2b2118; color: #faf6ef; }
+  #setBtn { background: #1d7a4f; color: #fff; }
+  button:disabled { opacity: .45; cursor: default; }
+  #status { margin-top: 14px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .ok { color: #1d7a4f; } .warn { color: #9a6a00; } .err { color: #b3261e; }
+  .note { margin-top: 16px; font-size: 13px; color: #7a6a58; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Set MintMate Pass metadata</h1>
+  <p class="sub">One transaction, signed by you in your own wallet. Nothing here ever asks for a key or seed phrase.</p>
+
+  <div class="row"><b>Contract</b><span class="mono">0xe02Eca3160260D3f19A74f304D4a82cDd6758e1c</span></div>
+  <div class="row"><b>Sign from</b><span class="mono">0xfFDd2f83555c64d1CaA17f5646C08b80013ED38b (main, owner)</span></div>
+  <div class="row"><b>New base URI</b><span class="mono">https://georgeonweb3.github.io/mintmate-pass/metadata/</span></div>
+  <div class="row"><b>Art</b><span>One pass card, Founding shown by a metadata trait</span></div>
+
+  <p class="note"><b>Read this first:</b> the metadata address locks at the first mint. After that it cannot be changed. Only tap Set once you are happy with the art and the metadata. The page reads tokenURI(1) back afterwards so you can see the live result.</p>
+
+  <button id="connectBtn">1. Connect main wallet</button>
+  <button id="setBtn" disabled>2. Set the metadata address</button>
+  <div id="status">Open this page inside your Bitget wallet's browser (Discover tab), not in Chrome. Then tap Connect.</div>
+
+  <p class="note">What happens: the page sends exactly one transaction, calling setBaseURI on the MintMate Pass contract with the address above. You confirm it in Bitget (a few cents of gas from the main wallet). Afterwards the page reads the first token's metadata address back and shows it.</p>
+</div>
+<script>
+const CALLDATA = "0x55f804b30000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000003668747470733a2f2f67656f7267656f6e776562332e6769746875622e696f2f6d696e746d6174652d706173732f6d657461646174612f00000000000000000000";
+const CONTRACT = "0xe02Eca3160260D3f19A74f304D4a82cDd6758e1c";
+const OWNER = "0xfFDd2f83555c64d1CaA17f5646C08b80013ED38b";
+const BASE_CHAIN_ID = 8453;
+const BASE_CHAIN_HEX = "0x2105";
+const TOKEN_URI_SELECTOR = "0xc87b56dd";
+const statusEl = document.getElementById("status");
+const connectBtn = document.getElementById("connectBtn");
+const setBtn = document.getElementById("setBtn");
+let provider = null, signer = null;
+
+function say(msg, cls) {
+  statusEl.textContent = msg;
+  statusEl.className = cls || "";
+}
+
+if (!window.ethereum) {
+  say("No wallet found on this page. Open this link inside your Bitget wallet's browser (Discover tab) and try again. It will not work in a normal browser.", "err");
+  connectBtn.disabled = true;
+}
+
+connectBtn.onclick = async () => {
+  try {
+    if (!window.ethereum) return;
+    say("Connecting...");
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    const account = (await signer.getAddress()).toLowerCase();
+    if (account !== OWNER.toLowerCase()) {
+      say("Connected as " + account + " — that is NOT your main wallet (" + OWNER + "). Only the owner can set the metadata address. Switch to the main account in Bitget, then reconnect.", "err");
+      setBtn.disabled = true;
+      return;
+    }
+    const net = await provider.getNetwork();
+    if (Number(net.chainId) !== BASE_CHAIN_ID) {
+      say("Connected as the main wallet. Switching to Base...");
+      try {
+        await provider.send("wallet_switchEthereumChain", [{ chainId: BASE_CHAIN_HEX }]);
+      } catch (e) {
+        if (e && e.code === 4902) {
+          await provider.send("wallet_addEthereumChain", [{ chainId: BASE_CHAIN_HEX, chainName: "Base", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: ["https://mainnet.base.org"], blockExplorerUrls: ["https://basescan.org"] }]);
+        } else { throw e; }
+      }
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+    }
+    say("Connected as the main wallet on Base. Ready — tap Set, then confirm the transaction in Bitget.", "ok");
+    connectBtn.disabled = true;
+    setBtn.disabled = false;
+  } catch (e) {
+    say("Could not connect: " + (e && e.message ? e.message : e), "err");
+  }
+};
+
+setBtn.onclick = async () => {
+  try {
+    setBtn.disabled = true;
+    connectBtn.disabled = true;
+    say("Estimating gas...");
+    const est = await provider.estimateGas({ to: CONTRACT, data: CALLDATA });
+    const gasLimit = (est * 120n) / 100n;
+    say("Gas estimate: " + est.toString() + ". Sending — confirm it in Bitget...");
+    const tx = await signer.sendTransaction({ to: CONTRACT, data: CALLDATA, gasLimit });
+    say("Sent. Waiting for it to land on Base...\nTransaction: " + tx.hash + "\nhttps://basescan.org/tx/" + tx.hash, "ok");
+    await tx.wait();
+    const tokenUriData = TOKEN_URI_SELECTOR + "0000000000000000000000000000000000000000000000000000000000000001";
+    const raw = await provider.call({ to: CONTRACT, data: tokenUriData });
+    const decoded = ethers.AbiCoder.defaultAbiCoder().decode(["string"], raw);
+    say("DONE. Metadata address is set.\n\ntokenURI(1) now reads:\n" + decoded[0] + "\n\nSend that line to Muse so it can confirm the metadata renders.", "ok");
+  } catch (e) {
+    say("Failed or rejected: " + (e && e.message ? e.message : e) + "\n\nNothing was changed. You can reload the page and try again.", "err");
+    setBtn.disabled = false;
+  }
+};
+</script>
+</body>
+</html>
