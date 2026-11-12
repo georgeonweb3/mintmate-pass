@@ -5,6 +5,23 @@ or a few taps (Remix). You sign it yourself — Muse does not hold the vault key
 
 Repo (public): https://github.com/georgeonweb3/mintmate-pass
 
+## Route 0 — One-tap deploy page (easiest, phone)
+
+Remix failed to load its compiler on the phone (network error fetching
+soljson). This page skips Remix entirely — the contract code is already
+compiled inside it.
+
+1. Open this link **inside your Bitget wallet's browser** (Discover tab):
+   https://georgeonweb3.github.io/mintmate-pass/deploy-page.html
+2. Tap **1. Connect vault wallet** (it checks you are on the vault account
+   and on Base, and switches network for you if needed).
+3. Tap **2. Deploy the contract**, confirm in Bitget (~$0.02 gas).
+4. The page shows the deployed contract address — send it to Muse.
+
+The page sends exactly one transaction (the contract creation) and never
+asks for a key or seed phrase. It refuses to deploy from any wallet other
+than the vault.
+
 ## The facts
 
 - **Deployer:** vault wallet `0xB3Aa20A71326D1d627e3097427514A30894D0FA8`
